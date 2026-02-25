@@ -327,7 +327,10 @@ export const RegistrationApprovedEmail = ({
 														<tr>
 															<td class="pad" style="padding-bottom:10px;padding-left:45px;padding-right:10px;">
 																<div style="color:#a96b7d;font-family:Montserrat, Trebuchet MS, Lucida Grande, Lucida Sans Unicode, Lucida Sans, Tahoma, sans-serif;font-size:14px;line-height:200%;text-align:left;mso-line-height-alt:28px;">
-																	<p style="margin: 0; word-break: break-word;"><span style="word-break: break-word;"><strong><span style="word-break: break-word;"><span style="word-break: break-word;"><span style="word-break: break-word;"><a href="https://www.thefoundersclub.in/dashboard/upcoming/register/success?ticketid=${ticketid}" target="_blank" title="Ticket Download URL" style="text-decoration: underline; color: #555555;" rel="noopener">Download your Ticket →</a></span></span></span></strong></span></p>
+																	<p style="margin: 0; word-break: break-word;"><span style="word-break: break-word;"><strong><span style="word-break: break-word;"><span style="word-break: break-word;">
+																		<!-- <a href="https://www.thefoundersclub.in/dashboard/upcoming/register/success?ticketid=${ticketid}" target="_blank" title="Ticket Download URL" style="text-decoration: underline; color: #555555;" rel="noopener">Download your Ticket →</a> -->
+																		You may get the ticket after approval from the team dashboard itself on the foundathon's website
+																	</span></span></span></strong></span></p>
 																</div>
 															</td>
 														</tr>

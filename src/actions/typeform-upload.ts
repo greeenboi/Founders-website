@@ -31,6 +31,7 @@ export async function createEvent(
       always_approve: parseResult.data.always_approve ?? false,
       more_info: parseResult.data.more_info,
       more_info_text: parseResult.data.more_info_text,
+      external_registration_link: parseResult.data.external_registration_link,
       rules: parseResult.data.rules,
       slug: parseResult.data.slug,
       typeform_config: parseResult.data.typeform_config,

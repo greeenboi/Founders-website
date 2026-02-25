@@ -1,47 +1,48 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-'use client';
+"use client";
 
-import { zodResolver } from '@hookform/resolvers/zod';
-import { parseDate } from 'chrono-node';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { parseDate } from "chrono-node";
 import {
   CalendarIcon,
   ChevronRightIcon,
   Eye,
+  Info,
   Link2,
   Loader2,
   Lock,
   Upload,
   Users,
   X,
-} from 'lucide-react';
-import Image from 'next/image';
-import * as React from 'react';
-import { useRef, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { createEvent } from '@/actions/typeform-upload';
-import TiptapMarkdown from '@/components/data-table-admin/registrations/tiptap-markdown';
+} from "lucide-react";
+import Image from "next/image";
+import * as React from "react";
+import { useRef, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { createEvent } from "@/actions/typeform-upload";
+import TiptapMarkdown from "@/components/data-table-admin/registrations/tiptap-markdown";
 import {
   type EventData,
   useEventAgent,
-} from '@/components/providers/EventAgentProvider';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
+} from "@/components/providers/EventAgentProvider";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
+} from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -50,54 +51,54 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover';
+} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
-import { Switch } from '@/components/ui/switch';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Textarea } from '@/components/ui/textarea';
-import { useFileUpload } from '@/hooks/use-file-upload';
-import { useToast } from '@/hooks/use-toast';
-import { createClient } from '@/utils/supabase/elevatedClient';
-import type { TypeFormField } from '../../../../../../../schema.zod';
-import { FormBuilder } from './form-builder';
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { useFileUpload } from "@/hooks/use-file-upload";
+import { useToast } from "@/hooks/use-toast";
+import { createClient } from "@/utils/supabase/elevatedClient";
+import type { TypeFormField } from "../../../../../../../schema.zod";
+import { FormBuilder } from "./form-builder";
 
 // Helper function to format date for display
 function formatDateDisplay(date: Date | undefined) {
-  if (!date) return '';
-  return date.toLocaleDateString('en-US', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
+  if (!date) return "";
+  return date.toLocaleDateString("en-US", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
   });
 }
 
 // Helper function to format time
 function formatTimeDisplay(date: Date | undefined) {
-  if (!date) return '';
-  return date.toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
+  if (!date) return "";
+  return date.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
     hour12: false,
   });
 }
 
 // Helper to combine date and time into ISO string
 function combineDateTimeToISO(date: Date | undefined, time: string): string {
-  if (!date) return '';
-  const [hours, minutes] = time.split(':').map(Number);
+  if (!date) return "";
+  const [hours, minutes] = time.split(":").map(Number);
   const combined = new Date(date);
   combined.setHours(hours || 0, minutes || 0, 0, 0);
   return combined.toISOString();
@@ -107,19 +108,19 @@ function combineDateTimeToISO(date: Date | undefined, time: string): string {
 function DateTimePicker({
   value,
   onChange,
-  placeholder = 'Select date...',
+  placeholder = "Select date...",
 }: {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
 }) {
   const [open, setOpen] = React.useState(false);
-  const [inputValue, setInputValue] = React.useState('');
+  const [inputValue, setInputValue] = React.useState("");
   const [date, setDate] = React.useState<Date | undefined>(
-    value ? new Date(value) : undefined
+    value ? new Date(value) : undefined,
   );
   const [time, setTime] = React.useState(
-    value ? formatTimeDisplay(new Date(value)) : '10:00'
+    value ? formatTimeDisplay(new Date(value)) : "10:00",
   );
   const [month, setMonth] = React.useState<Date | undefined>(date);
 
@@ -168,8 +169,8 @@ function DateTimePicker({
           placeholder={placeholder}
           className="pr-10"
           onChange={handleInputChange}
-          onKeyDown={e => {
-            if (e.key === 'ArrowDown') {
+          onKeyDown={(e) => {
+            if (e.key === "ArrowDown") {
               e.preventDefault();
               setOpen(true);
             }
@@ -234,7 +235,7 @@ function BannerImageUploader({
       handleDrop: hookHandleDrop,
     },
   ] = useFileUpload({
-    accept: 'image/*',
+    accept: "image/*",
     maxSize: 10 * 1024 * 1024, // 10MB
     multiple: false,
     maxFiles: 1,
@@ -261,28 +262,28 @@ function BannerImageUploader({
 
   const uploadToSupabase = async (file: File): Promise<string> => {
     const supabase = createClient();
-    const fileExt = file.name.split('.').pop();
+    const fileExt = file.name.split(".").pop();
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
     const filePath = `event-banners/${fileName}`;
 
     // If there's an existing file, delete it first
     if (currentFilePath) {
       await supabase.storage
-        .from('post-images')
+        .from("post-images")
         .remove([`event-banners/${currentFilePath}`]);
     }
 
     const { error } = await supabase.storage
-      .from('post-images')
+      .from("post-images")
       .upload(filePath, file, {
-        cacheControl: '3600',
+        cacheControl: "3600",
         upsert: false,
       });
 
     if (error) throw error;
 
     const { data: urlData } = supabase.storage
-      .from('post-images')
+      .from("post-images")
       .getPublicUrl(filePath);
 
     return urlData.publicUrl;
@@ -295,7 +296,7 @@ function BannerImageUploader({
     try {
       // Simulate progress
       const progressInterval = setInterval(() => {
-        setUploadProgress(prev => Math.min(prev + 10, 90));
+        setUploadProgress((prev) => Math.min(prev + 10, 90));
       }, 100);
 
       const publicUrl = await uploadToSupabase(file);
@@ -305,15 +306,15 @@ function BannerImageUploader({
       onChange(publicUrl);
 
       toast({
-        title: 'Image uploaded',
-        description: 'Banner image uploaded successfully.',
+        title: "Image uploaded",
+        description: "Banner image uploaded successfully.",
       });
     } catch (error) {
-      console.error('Upload error:', error);
+      console.error("Upload error:", error);
       toast({
-        title: 'Upload failed',
-        description: 'Failed to upload image. Please try again.',
-        variant: 'destructive',
+        title: "Upload failed",
+        description: "Failed to upload image. Please try again.",
+        variant: "destructive",
       });
     } finally {
       setIsUploading(false);
@@ -327,7 +328,7 @@ function BannerImageUploader({
     hookHandleDrop(e);
 
     const files = Array.from(e.dataTransfer.files);
-    if (files.length > 0 && files[0].type.startsWith('image/')) {
+    if (files.length > 0 && files[0].type.startsWith("image/")) {
       handleFileUpload(files[0]);
     }
   };
@@ -337,7 +338,7 @@ function BannerImageUploader({
     if (files && files.length > 0) {
       handleFileUpload(files[0]);
     }
-    e.target.value = '';
+    e.target.value = "";
   };
 
   const handleRemove = async () => {
@@ -345,13 +346,13 @@ function BannerImageUploader({
       try {
         const supabase = createClient();
         await supabase.storage
-          .from('post-images')
+          .from("post-images")
           .remove([`event-banners/${currentFilePath}`]);
       } catch (error) {
-        console.error('Failed to delete image:', error);
+        console.error("Failed to delete image:", error);
       }
     }
-    onChange('');
+    onChange("");
     setCurrentFilePath(null);
   };
 
@@ -359,9 +360,9 @@ function BannerImageUploader({
   React.useEffect(() => {
     if (errors.length > 0) {
       toast({
-        title: 'Invalid file',
+        title: "Invalid file",
         description: errors[0],
-        variant: 'destructive',
+        variant: "destructive",
       });
     }
   }, [errors, toast]);
@@ -372,8 +373,8 @@ function BannerImageUploader({
       <div
         className={`relative border-2 border-dashed rounded-lg transition-colors ${
           isDragging
-            ? 'border-primary bg-primary/5'
-            : 'border-muted-foreground/25 hover:border-muted-foreground/50'
+            ? "border-primary bg-primary/5"
+            : "border-muted-foreground/25 hover:border-muted-foreground/50"
         }`}
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
@@ -515,7 +516,7 @@ function FullFormPreview({
   eventData: any;
   formFields: TypeFormField[];
 }) {
-  const [previewTab, setPreviewTab] = React.useState<'event' | 'form'>('event');
+  const [previewTab, setPreviewTab] = React.useState<"event" | "form">("event");
 
   return (
     <Dialog>
@@ -532,7 +533,7 @@ function FullFormPreview({
 
         <Tabs
           value={previewTab}
-          onValueChange={v => setPreviewTab(v as 'event' | 'form')}
+          onValueChange={(v) => setPreviewTab(v as "event" | "form")}
         >
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="event">Event Page</TabsTrigger>
@@ -553,10 +554,10 @@ function FullFormPreview({
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                 <div className="absolute bottom-4 left-4 text-white">
                   <h2 className="text-2xl font-bold">
-                    {eventData.title || 'Event Title'}
+                    {eventData.title || "Event Title"}
                   </h2>
                   <p className="text-sm opacity-90">
-                    {eventData.venue || 'Venue'}
+                    {eventData.venue || "Venue"}
                   </p>
                 </div>
               </div>
@@ -571,7 +572,7 @@ function FullFormPreview({
                 <CardContent className="text-sm text-muted-foreground">
                   {eventData.start_date
                     ? new Date(eventData.start_date).toLocaleString()
-                    : 'Not set'}
+                    : "Not set"}
                 </CardContent>
               </Card>
               <Card>
@@ -580,7 +581,7 @@ function FullFormPreview({
                 </CardHeader>
                 <CardContent>
                   <Badge variant="outline" className="capitalize">
-                    {eventData.event_type || 'offline'}
+                    {eventData.event_type || "offline"}
                   </Badge>
                 </CardContent>
               </Card>
@@ -685,7 +686,7 @@ function FormPreviewMultistep({ fields }: { fields: TypeFormField[] }) {
         <CardContent className="pt-6 space-y-4">
           <div className="flex items-center gap-2">
             <h3 className="text-lg font-semibold">
-              {currentField.label || 'Untitled Field'}
+              {currentField.label || "Untitled Field"}
             </h3>
             {currentField.required && (
               <Badge variant="destructive" className="text-xs">
@@ -702,23 +703,23 @@ function FormPreviewMultistep({ fields }: { fields: TypeFormField[] }) {
 
           {/* Field Type Preview */}
           <div className="pt-2">
-            {currentField.fieldType === 'text' && (
+            {currentField.fieldType === "text" && (
               <Input disabled placeholder="Short text answer..." />
             )}
-            {currentField.fieldType === 'textarea' && (
+            {currentField.fieldType === "textarea" && (
               <Textarea
                 disabled
                 placeholder="Long text answer..."
                 className="min-h-[100px]"
               />
             )}
-            {currentField.fieldType === 'select' && (
+            {currentField.fieldType === "select" && (
               <Select disabled>
                 <SelectTrigger>
                   <SelectValue placeholder="Select an option..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {currentField.options?.map(opt => (
+                  {currentField.options?.map((opt) => (
                     <SelectItem key={opt} value={opt}>
                       {opt}
                     </SelectItem>
@@ -726,9 +727,9 @@ function FormPreviewMultistep({ fields }: { fields: TypeFormField[] }) {
                 </SelectContent>
               </Select>
             )}
-            {currentField.fieldType === 'radio' && (
+            {currentField.fieldType === "radio" && (
               <div className="space-y-2">
-                {currentField.options?.map(opt => (
+                {currentField.options?.map((opt) => (
                   <div key={opt} className="flex items-center gap-2">
                     <div className="h-4 w-4 rounded-full border-2 border-muted-foreground" />
                     <span className="text-sm">{opt}</span>
@@ -736,17 +737,17 @@ function FormPreviewMultistep({ fields }: { fields: TypeFormField[] }) {
                 ))}
               </div>
             )}
-            {currentField.fieldType === 'checkbox' &&
-              currentField.checkboxType === 'single' && (
+            {currentField.fieldType === "checkbox" &&
+              currentField.checkboxType === "single" && (
                 <div className="flex items-center gap-2">
                   <div className="h-4 w-4 rounded border-2 border-muted-foreground" />
                   <span className="text-sm">I agree</span>
                 </div>
               )}
-            {currentField.fieldType === 'checkbox' &&
-              currentField.checkboxType === 'multiple' && (
+            {currentField.fieldType === "checkbox" &&
+              currentField.checkboxType === "multiple" && (
                 <div className="space-y-2">
-                  {currentField.items?.map(item => (
+                  {currentField.items?.map((item) => (
                     <div key={item.id} className="flex items-center gap-2">
                       <div className="h-4 w-4 rounded border-2 border-muted-foreground" />
                       <span className="text-sm">{item.label}</span>
@@ -754,7 +755,7 @@ function FormPreviewMultistep({ fields }: { fields: TypeFormField[] }) {
                   ))}
                 </div>
               )}
-            {currentField.fieldType === 'date' && (
+            {currentField.fieldType === "date" && (
               <Button
                 variant="outline"
                 disabled
@@ -764,7 +765,7 @@ function FormPreviewMultistep({ fields }: { fields: TypeFormField[] }) {
                 Pick a date
               </Button>
             )}
-            {currentField.fieldType === 'slider' && (
+            {currentField.fieldType === "slider" && (
               <div className="space-y-2">
                 <div className="flex justify-between text-sm text-muted-foreground">
                   <span>{currentField.min || 0}</span>
@@ -773,29 +774,29 @@ function FormPreviewMultistep({ fields }: { fields: TypeFormField[] }) {
                 <div className="h-2 bg-muted rounded-full" />
               </div>
             )}
-            {currentField.fieldType === 'url' && (
+            {currentField.fieldType === "url" && (
               <Input
                 disabled
                 type="url"
-                placeholder={currentField.urlPlaceholder || 'https://...'}
+                placeholder={currentField.urlPlaceholder || "https://..."}
               />
             )}
-            {currentField.fieldType === 'file' && (
+            {currentField.fieldType === "file" && (
               <div className="border-2 border-dashed rounded-lg p-6 text-center">
                 <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
                 <p className="text-sm text-muted-foreground">
                   Drop files here or click to upload
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Max {currentField.maxFileSizeMB || 5}MB •{' '}
-                  {currentField.acceptedFileTypes || 'All files'}
+                  Max {currentField.maxFileSizeMB || 5}MB •{" "}
+                  {currentField.acceptedFileTypes || "All files"}
                 </p>
               </div>
             )}
-            {currentField.fieldType === 'redirect' && (
+            {currentField.fieldType === "redirect" && (
               <Button variant="outline" disabled className="gap-2">
                 <Link2 className="h-4 w-4" />
-                {currentField.redirectLabel || 'Visit Link'}
+                {currentField.redirectLabel || "Visit Link"}
               </Button>
             )}
           </div>
@@ -831,12 +832,12 @@ function FormPreviewMultistep({ fields }: { fields: TypeFormField[] }) {
             <Button
               key={field.name}
               type="button"
-              variant={idx === step ? 'default' : 'outline'}
+              variant={idx === step ? "default" : "outline"}
               size="sm"
               className="h-7 text-xs"
               onClick={() => setStep(idx)}
             >
-              {idx + 1}. {field.label || 'Untitled'}
+              {idx + 1}. {field.label || "Untitled"}
             </Button>
           ))}
         </div>
@@ -847,17 +848,22 @@ function FormPreviewMultistep({ fields }: { fields: TypeFormField[] }) {
 
 // Event creation schema
 const eventFormSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
-  venue: z.string().min(1, 'Venue is required'),
-  start_date: z.string().min(1, 'Start date is required'),
-  end_date: z.string().min(1, 'End date is required'),
-  publish_date: z.string().min(1, 'Publish date is required'),
-  banner_image: z.string().url('Must be a valid URL'),
-  description: z.string().min(10, 'Description must be at least 10 characters'),
+  title: z.string().min(1, "Title is required"),
+  venue: z.string().min(1, "Venue is required"),
+  start_date: z.string().min(1, "Start date is required"),
+  end_date: z.string().min(1, "End date is required"),
+  publish_date: z.string().min(1, "Publish date is required"),
+  banner_image: z.string().url("Must be a valid URL"),
+  description: z.string().min(10, "Description must be at least 10 characters"),
   rules: z.string().optional(),
-  more_info: z.string().url('Must be a valid URL').optional().or(z.literal('')),
+  more_info: z.string().url("Must be a valid URL").optional().or(z.literal("")),
   more_info_text: z.string().optional(),
-  event_type: z.enum(['online', 'offline', 'hybrid']),
+  external_registration_link: z
+    .string()
+    .url("Must be a valid URL")
+    .optional()
+    .or(z.literal("")),
+  event_type: z.enum(["online", "offline", "hybrid"]),
   is_featured: z.boolean(),
   is_gated: z.boolean(),
   always_approve: z.boolean(),
@@ -869,7 +875,7 @@ type EventFormValues = z.infer<typeof eventFormSchema>;
 export default function EventFormBuilderPage() {
   const [formFields, setFormFields] = useState<TypeFormField[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [activeTab, setActiveTab] = useState<'details' | 'form'>('details');
+  const [activeTab, setActiveTab] = useState<"details" | "form">("details");
   const { toast } = useToast();
 
   // Agent integration
@@ -878,17 +884,18 @@ export default function EventFormBuilderPage() {
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventFormSchema),
     defaultValues: {
-      title: '',
-      venue: '',
-      start_date: '',
-      end_date: '',
-      publish_date: '',
-      banner_image: '',
-      description: '',
-      rules: '',
-      more_info: '',
-      more_info_text: '',
-      event_type: 'offline',
+      title: "",
+      venue: "",
+      start_date: "",
+      end_date: "",
+      publish_date: "",
+      banner_image: "",
+      description: "",
+      rules: "",
+      more_info: "",
+      more_info_text: "",
+      external_registration_link: "",
+      event_type: "offline",
       is_featured: false,
       is_gated: false,
       always_approve: false,
@@ -899,48 +906,48 @@ export default function EventFormBuilderPage() {
   // Register agent callbacks for autofilling form
   React.useEffect(() => {
     onEventDataGenerated.current = (data: EventData) => {
-      if (data.title) form.setValue('title', data.title);
-      if (data.description) form.setValue('description', data.description);
-      if (data.venue) form.setValue('venue', data.venue);
-      if (data.event_type) form.setValue('event_type', data.event_type);
-      if (data.tags) form.setValue('tags', data.tags);
-      if (data.rules) form.setValue('rules', data.rules);
-      if (data.is_gated !== undefined) form.setValue('is_gated', data.is_gated);
+      if (data.title) form.setValue("title", data.title);
+      if (data.description) form.setValue("description", data.description);
+      if (data.venue) form.setValue("venue", data.venue);
+      if (data.event_type) form.setValue("event_type", data.event_type);
+      if (data.tags) form.setValue("tags", data.tags);
+      if (data.rules) form.setValue("rules", data.rules);
+      if (data.is_gated !== undefined) form.setValue("is_gated", data.is_gated);
       if (data.always_approve !== undefined)
-        form.setValue('always_approve', data.always_approve);
+        form.setValue("always_approve", data.always_approve);
 
       // Handle dates
       if (data.suggested_dates) {
         if (data.suggested_dates.start_date) {
-          form.setValue('start_date', data.suggested_dates.start_date);
+          form.setValue("start_date", data.suggested_dates.start_date);
         }
         if (data.suggested_dates.end_date) {
-          form.setValue('end_date', data.suggested_dates.end_date);
+          form.setValue("end_date", data.suggested_dates.end_date);
         }
         if (data.suggested_dates.publish_date) {
-          form.setValue('publish_date', data.suggested_dates.publish_date);
+          form.setValue("publish_date", data.suggested_dates.publish_date);
         }
       }
 
       toast({
-        title: 'Event details updated',
+        title: "Event details updated",
         description:
-          'The AI has filled in the event details. Review and adjust as needed.',
+          "The AI has filled in the event details. Review and adjust as needed.",
       });
 
       // Switch to details tab if not there
-      setActiveTab('details');
+      setActiveTab("details");
     };
 
     onFormFieldsGenerated.current = (fields: TypeFormField[]) => {
       setFormFields(fields);
       toast({
-        title: 'Form fields generated',
+        title: "Form fields generated",
         description: `The AI has created ${fields.length} form fields. Review them in the Form Builder tab.`,
       });
 
       // Switch to form tab to show the generated fields
-      setActiveTab('form');
+      setActiveTab("form");
     };
 
     return () => {
@@ -953,17 +960,20 @@ export default function EventFormBuilderPage() {
     setFormFields(fields);
   };
 
-  const isGated = form.watch('is_gated');
+  const isGated = form.watch("is_gated");
+  const externalRegistrationLink = form.watch("external_registration_link");
   const watchedValues = form.watch();
 
   const onSubmit = async (data: EventFormValues) => {
-    if (formFields.length === 0) {
+    // Allow submission if either form fields exist OR external registration link is provided
+    if (formFields.length === 0 && !data.external_registration_link) {
       toast({
-        title: 'No form fields',
-        description: 'Please add at least one form field for registrations.',
-        variant: 'destructive',
+        title: "Registration method required",
+        description:
+          "Please add form fields OR provide an external registration link.",
+        variant: "destructive",
       });
-      setActiveTab('form');
+      setActiveTab("form");
       return;
     }
 
@@ -971,8 +981,8 @@ export default function EventFormBuilderPage() {
     try {
       const slug = data.title
         .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/(^-|-$)/g, '');
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
 
       const eventData = {
         ...data,
@@ -983,19 +993,19 @@ export default function EventFormBuilderPage() {
       await createEvent(eventData as any);
 
       toast({
-        title: 'Event created!',
+        title: "Event created!",
         description: `${data.title} has been created successfully.`,
       });
 
       form.reset();
       setFormFields([]);
     } catch (error) {
-      console.error('Error creating event:', error);
+      console.error("Error creating event:", error);
       toast({
-        title: 'Error creating event',
+        title: "Error creating event",
         description:
-          error instanceof Error ? error.message : 'Please try again.',
-        variant: 'destructive',
+          error instanceof Error ? error.message : "Please try again.",
+        variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
@@ -1021,7 +1031,7 @@ export default function EventFormBuilderPage() {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <Tabs
             value={activeTab}
-            onValueChange={v => setActiveTab(v as 'details' | 'form')}
+            onValueChange={(v) => setActiveTab(v as "details" | "form")}
           >
             <TabsList className="grid w-full grid-cols-2 max-w-md">
               <TabsTrigger value="details" className="gap-2">
@@ -1234,8 +1244,8 @@ export default function EventFormBuilderPage() {
                         <FormLabel>Event Rules & Guidelines</FormLabel>
                         <FormControl>
                           <TiptapMarkdown
-                            content={field.value || ''}
-                            onUpdate={markdown => field.onChange(markdown)}
+                            content={field.value || ""}
+                            onUpdate={(markdown) => field.onChange(markdown)}
                             placeholder="Enter event rules and guidelines..."
                           />
                         </FormControl>
@@ -1290,6 +1300,66 @@ export default function EventFormBuilderPage() {
                       </FormItem>
                     )}
                   />
+
+                  <Separator />
+
+                  {/* External Registration Link */}
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="text-sm font-medium flex items-center gap-2">
+                        <Link2 className="h-4 w-4" />
+                        External Registration (Optional)
+                      </h4>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Use an external form (Google Forms, Typeform, etc.)
+                        instead of the internal form builder
+                      </p>
+                    </div>
+                    <FormField
+                      control={form.control}
+                      name="external_registration_link"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>External Registration URL</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                              <Input
+                                {...field}
+                                type="url"
+                                placeholder="https://forms.google.com/..."
+                                className="pl-10"
+                              />
+                            </div>
+                          </FormControl>
+                          <FormDescription>
+                            If provided, the &quot;Register Now&quot; button
+                            will link to this URL instead of using the internal
+                            form
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {externalRegistrationLink && (
+                      <div className="p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900 rounded-lg">
+                        <div className="flex items-start gap-3">
+                          <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+                          <div className="space-y-1">
+                            <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                              External Registration Enabled
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              Users will be redirected to the external link. You
+                              can still add form fields below for reference, but
+                              they won&apos;t be used for registration.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
 
@@ -1435,7 +1505,7 @@ export default function EventFormBuilderPage() {
               <div className="flex justify-end">
                 <Button
                   type="button"
-                  onClick={() => setActiveTab('form')}
+                  onClick={() => setActiveTab("form")}
                   className="gap-2"
                 >
                   Continue to Form Builder
@@ -1452,13 +1522,14 @@ export default function EventFormBuilderPage() {
                     <div>
                       <CardTitle>Registration Form Builder</CardTitle>
                       <CardDescription>
-                        Build a custom registration form. Drag and drop to
-                        reorder fields.
+                        {externalRegistrationLink
+                          ? "Optional: Add form fields for reference (external registration is active)"
+                          : "Build a custom registration form. Drag and drop to reorder fields."}
                       </CardDescription>
                     </div>
                     <Badge variant="outline" className="text-sm">
                       {formFields.length} field
-                      {formFields.length !== 1 ? 's' : ''}
+                      {formFields.length !== 1 ? "s" : ""}
                     </Badge>
                   </div>
                 </CardHeader>
@@ -1476,14 +1547,19 @@ export default function EventFormBuilderPage() {
                 <CardContent className="pt-6">
                   <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
                     <div className="text-sm text-muted-foreground">
-                      {formFields.length === 0 ? (
+                      {externalRegistrationLink ? (
+                        <span className="text-green-600">
+                          ✓ Ready to create event with external registration
+                        </span>
+                      ) : formFields.length === 0 ? (
                         <span className="text-amber-600">
-                          Add at least one form field to continue
+                          Add at least one form field OR provide an external
+                          registration link
                         </span>
                       ) : (
                         <span className="text-green-600">
                           ✓ Ready to create event with {formFields.length} field
-                          {formFields.length !== 1 ? 's' : ''}
+                          {formFields.length !== 1 ? "s" : ""}
                         </span>
                       )}
                     </div>
@@ -1499,7 +1575,7 @@ export default function EventFormBuilderPage() {
                         Reset All
                       </Button>
                       <Button type="submit" disabled={isSubmitting}>
-                        {isSubmitting ? 'Creating Event...' : 'Create Event'}
+                        {isSubmitting ? "Creating Event..." : "Create Event"}
                       </Button>
                     </div>
                   </div>

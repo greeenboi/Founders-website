@@ -31,11 +31,63 @@ export async function createEvent(
       always_approve: parseResult.data.always_approve ?? false,
       more_info: parseResult.data.more_info,
       more_info_text: parseResult.data.more_info_text,
+      external_registration_link: parseResult.data.external_registration_link,
       rules: parseResult.data.rules,
       slug: parseResult.data.slug,
       typeform_config: parseResult.data.typeform_config,
     })
     .single();
+  if (error) {
+    throw new Error(error.message);
+  }
+  return data;
+}
+
+export async function updateEvent(
+  eventId: string,
+  eventData: Partial<Event> & {
+    is_gated?: boolean;
+    always_approve?: boolean;
+    more_info_text?: string | null;
+    external_registration_link?: string | null;
+  }
+) {
+  const supabase = createClient();
+
+  // Build the update payload, only including fields that were actually provided
+  const updatePayload: Record<string, unknown> = {};
+
+  if (eventData.title) updatePayload.title = eventData.title;
+  if (eventData.description) updatePayload.description = eventData.description;
+  if (eventData.start_date) updatePayload.start_date = eventData.start_date;
+  if (eventData.end_date) updatePayload.end_date = eventData.end_date;
+  if (eventData.publish_date) updatePayload.publish_date = eventData.publish_date;
+  if (eventData.venue) updatePayload.venue = eventData.venue;
+  if (eventData.banner_image) updatePayload.banner_image = eventData.banner_image;
+  if (eventData.tags) updatePayload.tags = eventData.tags;
+  if (eventData.event_type) updatePayload.event_type = eventData.event_type;
+  if (eventData.is_featured !== undefined) updatePayload.is_featured = eventData.is_featured;
+  if (eventData.is_gated !== undefined) updatePayload.is_gated = eventData.is_gated;
+  if (eventData.always_approve !== undefined) updatePayload.always_approve = eventData.always_approve;
+  if (eventData.more_info) updatePayload.more_info = eventData.more_info;
+  if (eventData.more_info_text !== undefined) updatePayload.more_info_text = eventData.more_info_text;
+  if (eventData.external_registration_link !== undefined) updatePayload.external_registration_link = eventData.external_registration_link;
+  if (eventData.rules) updatePayload.rules = eventData.rules;
+  if (eventData.slug) updatePayload.slug = eventData.slug;
+  if (eventData.typeform_config) updatePayload.typeform_config = eventData.typeform_config;
+
+  // Validate that at least one field is being updated
+  if (Object.keys(updatePayload).length === 0) {
+    throw new Error('No valid fields provided to update');
+  }
+
+  const { data, error } = await supabase
+    .from('events')
+    .update(updatePayload)
+    .eq('id', eventId)
+    .select()
+    .single();
+    
   if (error) {
     throw new Error(error.message);
   }

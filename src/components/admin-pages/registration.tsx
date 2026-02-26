@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useQuery } from '@supabase-cache-helpers/postgrest-react-query';
-import { formatInTimeZone } from 'date-fns-tz';
+import { useQuery } from "@supabase-cache-helpers/postgrest-react-query";
+import { formatInTimeZone } from "date-fns-tz";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -9,23 +9,24 @@ import {
   Calendar,
   CheckCircle,
   Clock,
+  ExternalLink,
   FilePlus,
   Loader2,
   Mail,
   Ticket,
   Users,
   XCircle,
-} from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import {
   useUpdateRegistrationApprovalMutation,
   useUpdateRegistrationAttendanceMutation,
-} from '@/actions/admin/hooks/registrations';
-import { getRegistrationById } from '@/actions/admin/registrations';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+} from "@/actions/admin/hooks/registrations";
+import { getRegistrationById } from "@/actions/admin/registrations";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -33,25 +34,26 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
+} from "@/components/ui/card";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
-import type { Registration } from '@/types/registrations';
-import { createClient } from '@/utils/supabase/client';
-import type { Database } from '../../../database.types';
-import Tiptap from '../data-table-admin/registrations/tiptap-email';
-import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
+import type { Registration } from "@/types/registrations";
+import type { TypeformFieldConfig } from "@/types/typeform-config";
+import { createClient } from "@/utils/supabase/client";
+import type { Database } from "../../../database.types";
+import Tiptap from "../data-table-admin/registrations/tiptap-email";
+import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import {
   Dialog,
   DialogContent,
@@ -60,9 +62,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '../ui/dialog';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
+} from "../ui/dialog";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
 
 const isValidDate = (value: string) => {
   const date = new Date(value);
@@ -71,46 +73,88 @@ const isValidDate = (value: string) => {
 };
 
 const formatValue = (
-  value: string[] | string | boolean | number
+  value: string[] | string | boolean | number | object,
 ): React.ReactNode => {
   // Arrays
   if (Array.isArray(value)) {
+    // Check if array contains objects (like team members)
+    if (value.length > 0 && typeof value[0] === "object") {
+      return (
+        <div className="space-y-2">
+          {value.map((item, index) => (
+            <div key={index} className="p-3 bg-muted rounded-md">
+              {typeof item === "object" && item !== null ? (
+                <div className="space-y-1">
+                  {Object.entries(item).map(([key, val]) => (
+                    <div key={key} className="text-sm">
+                      <span className="font-medium capitalize">
+                        {key.replace(/([A-Z])/g, " $1").replace(/_/g, " ")}:
+                      </span>{" "}
+                      <span>{String(val)}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                String(item)
+              )}
+            </div>
+          ))}
+        </div>
+      );
+    }
+    // Regular array of primitives
     return (
       <div className="flex flex-wrap gap-1">
         {value.map((item, index) => (
           <span key={index} className="px-2 py-1 bg-muted rounded-md text-sm">
-            {item}
+            {String(item)}
           </span>
         ))}
       </div>
     );
   }
 
+  // Object (but not null)
+  if (typeof value === "object" && value !== null) {
+    return (
+      <div className="space-y-1">
+        {Object.entries(value).map(([key, val]) => (
+          <div key={key} className="text-sm">
+            <span className="font-medium capitalize">
+              {key.replace(/([A-Z])/g, " $1").replace(/_/g, " ")}:
+            </span>{" "}
+            <span>{String(val)}</span>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   // Date
-  if (typeof value === 'string' && isValidDate(value)) {
-    return formatInTimeZone(new Date(value), 'Asia/Kolkata', 'dd MMMM yyyy');
+  if (typeof value === "string" && isValidDate(value)) {
+    return formatInTimeZone(new Date(value), "Asia/Kolkata", "dd MMMM yyyy");
   }
 
   // Boolean
-  if (typeof value === 'boolean') {
+  if (typeof value === "boolean") {
     return (
       <span
-        className={`px-2 py-1 rounded-full text-sm ${value ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
+        className={`px-2 py-1 rounded-full text-sm ${value ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
       >
-        {value ? 'Yes' : 'No'}
+        {value ? "Yes" : "No"}
       </span>
     );
   }
 
   // Number
-  if (typeof value === 'number') {
+  if (typeof value === "number") {
     return <span className="font-mono">{value}</span>;
   }
 
   // Link
   if (
-    typeof value === 'string' &&
-    (value.startsWith('http://') || value.startsWith('https://'))
+    typeof value === "string" &&
+    (value.startsWith("http://") || value.startsWith("https://"))
   ) {
     return (
       <a
@@ -125,7 +169,7 @@ const formatValue = (
   }
 
   // Paragraph (multi-line text)
-  if (typeof value === 'string' && value.includes('\n')) {
+  if (typeof value === "string" && value.includes("\n")) {
     return <div className="whitespace-pre-wrap">{value}</div>;
   }
 
@@ -141,12 +185,25 @@ export default function RegistrationDetails({ slug }: { slug: string }) {
     isLoading,
     refetch,
   } = useQuery<Registration>(getRegistrationById(supabase, slug));
+
+  // Fetch event data to get typeform_config for field label mapping
+  const { data: eventData } = useQuery(
+    supabase
+      .from("events")
+      .select("typeform_config")
+      .eq("id", registration?.event_id || "")
+      .single(),
+    {
+      enabled: !!registration?.event_id,
+    },
+  );
+
   const Router = useRouter();
   const { toast } = useToast();
 
   const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
-  const [emailSubject, setEmailSubject] = useState('');
-  const [emailBody, setEmailBody] = useState('');
+  const [emailSubject, setEmailSubject] = useState("");
+  const [emailBody, setEmailBody] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [isUpdatingAttendance, setIsUpdatingAttendance] = useState(false);
   const [isUpdatingApproval, setIsUpdatingApproval] = useState(false);
@@ -158,6 +215,141 @@ export default function RegistrationDetails({ slug }: { slug: string }) {
     useUpdateRegistrationAttendanceMutation();
   const UpdateRegistrationApprovalMutation =
     useUpdateRegistrationApprovalMutation();
+
+  // ==================== TYPED HELPER FUNCTIONS ====================
+  // Uses TypeformFieldConfig for proper type safety
+
+  /** Parsed config array (typed). Falls back to empty array. */
+  const fieldConfigs: TypeformFieldConfig[] = Array.isArray(
+    eventData?.typeform_config,
+  )
+    ? (eventData.typeform_config as unknown as TypeformFieldConfig[])
+    : [];
+
+  /** Look up a single field config entry by ID. */
+  const getFieldConfig = (fieldId: string): TypeformFieldConfig | undefined =>
+    fieldConfigs.find((f) => f.id === fieldId);
+
+  /** Human-readable label; falls back to formatted field ID. */
+  const getFieldLabel = (fieldId: string): string => {
+    const cfg = getFieldConfig(fieldId);
+    if (cfg?.label) return cfg.label;
+
+    return fieldId
+      .replace(/([A-Z])/g, " $1")
+      .replace(/_/g, " ")
+      .toLowerCase();
+  };
+
+  /** Whether the field should be hidden from the admin detail view. */
+  const isFieldHidden = (fieldId: string): boolean => {
+    // Internal / metadata fields that should never appear in Form Response
+    const alwaysHidden = new Set([
+      "problemStatementId",
+      "problem_statement_id",
+      "problemStatementCap",
+      "problem_statement_cap",
+      "presentationFileName",
+      "presentation_file_name",
+      "presentationMimeType",
+      "presentation_mime_type",
+      "presentationStoragePath",
+      "presentation_storage_path",
+      "presentationFileSizeBytes",
+      "presentation_file_size_bytes",
+    ]);
+    if (alwaysHidden.has(fieldId)) return true;
+
+    return getFieldConfig(fieldId)?.hidden === true;
+  };
+
+  /** Whether the field represents a file upload. */
+  const isFileUploadField = (fieldId: string, value: unknown): boolean => {
+    const cfg = getFieldConfig(fieldId);
+    if (cfg?.type === "file_upload" || cfg?.type === "file") return true;
+
+    // Heuristic fallback when no config exists
+    if (typeof value === "string") {
+      return (
+        value.includes("supabase.co/storage") ||
+        /\.(pdf|ppt|pptx|doc|docx|jpg|jpeg|png|gif)$/i.test(value)
+      );
+    }
+    return false;
+  };
+
+  /** Whether the field contains team-member data. */
+  const isTeamMembersField = (fieldId: string): boolean => {
+    const cfg = getFieldConfig(fieldId);
+    if (cfg?.type === "team_members" || cfg?.isTeamMembers) return true;
+
+    // Backward-compat fallback
+    return ["team_members", "teamMembers", "members", "teamMember"].includes(
+      fieldId,
+    );
+  };
+
+  /** Resolve a file URL and determine if it can be previewed inline. */
+  const getFileViewerInfo = (value: string, fieldId: string) => {
+    let fileUrl = value;
+
+    if (!value.includes("supabase.co/storage") && !value.startsWith("http")) {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+      const bucket = getFieldConfig(fieldId)?.bucketName ?? "registrations";
+      fileUrl = `${supabaseUrl}/storage/v1/object/public/${bucket}/${encodeURIComponent(value)}`;
+    }
+
+    const lower = value.toLowerCase();
+    const isPPT = /\.(ppt|pptx)$/.test(lower);
+    const isPDF = /\.pdf$/.test(lower);
+    const isDoc = /\.(doc|docx)$/.test(lower);
+
+    if (isPPT || isDoc) {
+      return {
+        viewUrl: `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileUrl)}`,
+        downloadUrl: fileUrl,
+        canView: true,
+        fileType: isPPT ? "PowerPoint" : "Word",
+      };
+    }
+
+    if (isPDF) {
+      return {
+        viewUrl: fileUrl,
+        downloadUrl: fileUrl,
+        canView: true,
+        fileType: "PDF",
+      };
+    }
+
+    return {
+      viewUrl: fileUrl,
+      downloadUrl: fileUrl,
+      canView: false,
+      fileType: "File",
+    };
+  };
+
+  /** Display name shown in the header (team name or event title). */
+  const getDisplayName = (): string => {
+    if (!registration) return "N/A";
+    if (!registration.is_team_entry) return registration.event_title;
+
+    const details = registration.details as Record<string, unknown>;
+
+    // Check config for a field marked as team name
+    const teamNameCfg = fieldConfigs.find((f) => f.isTeamName);
+    if (teamNameCfg?.id && details[teamNameCfg.id]) {
+      return String(details[teamNameCfg.id]);
+    }
+
+    // Backward-compat fallback
+    for (const key of ["teamName", "team_name", "name", "team"]) {
+      if (details[key]) return String(details[key]);
+    }
+
+    return "Team Entry";
+  };
 
   const [templateResponse] = useState(`
     <p>Dear Applicant,</p>
@@ -214,7 +406,7 @@ export default function RegistrationDetails({ slug }: { slug: string }) {
   }
 
   const handleAttendanceUpdate = async (
-    attendance: Database['public']['Enums']['attendance']
+    attendance: Database["public"]["Enums"]["attendance"],
   ) => {
     if (!registration.id || isUpdatingAttendance) return;
 
@@ -226,24 +418,24 @@ export default function RegistrationDetails({ slug }: { slug: string }) {
       });
       setAttendance(attendance); // Update local state
       toast({
-        title: 'Attendance Updated',
+        title: "Attendance Updated",
         description: `Registration ${registration.registration_email} marked as ${attendance}`,
       });
       await refetch();
       setIsUpdatingAttendance(false);
     } catch (error) {
-      console.error('Error updating attendance:', error);
+      console.error("Error updating attendance:", error);
       setIsUpdatingAttendance(false);
       toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to update attendance. Please try again.',
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to update attendance. Please try again.",
       });
     }
   };
 
   const handleApprovalUpdate = async (
-    approval: Database['public']['Enums']['registration-status']
+    approval: Database["public"]["Enums"]["registration-status"],
   ) => {
     if (!registration.id || isUpdatingApproval) return; // Fixed checking wrong state
 
@@ -254,11 +446,11 @@ export default function RegistrationDetails({ slug }: { slug: string }) {
         RegistrationId: registration.id,
       });
       setIsApproved(approval); // Update local state
-      if (approval === 'ACCEPTED') {
-        const response = await fetch('/api/send-approved-email', {
-          method: 'POST',
+      if (approval === "ACCEPTED") {
+        const response = await fetch("/api/send-approved-email", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             to: registration.registration_email,
@@ -268,43 +460,43 @@ export default function RegistrationDetails({ slug }: { slug: string }) {
         });
         if (response.ok) {
           toast({
-            title: 'Approval Email Sent',
+            title: "Approval Email Sent",
           });
         } else {
-          throw new Error('Failed to send email');
+          throw new Error("Failed to send email");
         }
       }
       toast({
-        title: 'Approval Updated',
+        title: "Approval Updated",
         description: `Registration ${registration.registration_email} marked as ${approval}`,
       });
       await refetch();
       setIsUpdatingApproval(false);
     } catch (error) {
-      console.error('Error updating approval:', error);
+      console.error("Error updating approval:", error);
       setIsUpdatingApproval(false);
       toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to update approval status. Please try again.',
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to update approval status. Please try again.",
       });
     }
   };
 
   const insertTemplate = () => {
     const filledTemplate = templateResponse
-      .replace('{email}', registration.registration_email)
-      .replace('{event_title}', registration.event_title);
+      .replace("{email}", registration.registration_email)
+      .replace("{event_title}", registration.event_title);
     setEmailBody(filledTemplate);
   };
 
   const handleSendEmail = async () => {
     setIsSending(true);
     try {
-      const response = await fetch('/api/send-email', {
-        method: 'POST',
+      const response = await fetch("/api/send-email", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           to: registration.registration_email,
@@ -314,14 +506,14 @@ export default function RegistrationDetails({ slug }: { slug: string }) {
       });
 
       if (response.ok) {
-        alert('Email sent successfully!');
+        alert("Email sent successfully!");
         setIsEmailDialogOpen(false);
       } else {
-        throw new Error('Failed to send email');
+        throw new Error("Failed to send email");
       }
     } catch (error) {
-      console.error('Error sending email:', error);
-      alert('Failed to send email. Please try again.');
+      console.error("Error sending email:", error);
+      alert("Failed to send email. Please try again.");
     } finally {
       setIsSending(false);
     }
@@ -357,13 +549,16 @@ export default function RegistrationDetails({ slug }: { slug: string }) {
                 </AvatarFallback>
               </Avatar>
               <div>
-                <CardTitle className="text-2xl">
-                  {registration.event_title}
-                </CardTitle>
+                <CardTitle className="text-2xl">{getDisplayName()}</CardTitle>
                 <CardDescription className="flex items-center gap-2 mt-1">
                   <AtSign className="h-4 w-4" />
                   {registration.registration_email}
                 </CardDescription>
+                {registration.is_team_entry && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Event: {registration.event_title}
+                  </p>
+                )}
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -388,8 +583,8 @@ export default function RegistrationDetails({ slug }: { slug: string }) {
                 </DialogTrigger>
                 <DialogContent
                   className="sm:max-w-2xl z-[1000]"
-                  onPointerDownOutside={e => e.preventDefault()}
-                  onFocusOutside={e => e.preventDefault()}
+                  onPointerDownOutside={(e) => e.preventDefault()}
+                  onFocusOutside={(e) => e.preventDefault()}
                 >
                   <DialogHeader>
                     <DialogTitle>Send Email</DialogTitle>
@@ -423,7 +618,7 @@ export default function RegistrationDetails({ slug }: { slug: string }) {
                       <Input
                         id="subject"
                         value={emailSubject}
-                        onChange={e => setEmailSubject(e.target.value)}
+                        onChange={(e) => setEmailSubject(e.target.value)}
                       />
                     </div>
                     <div className="flex flex-col gap-2">
@@ -431,7 +626,7 @@ export default function RegistrationDetails({ slug }: { slug: string }) {
                       <Tiptap
                         key={emailBody}
                         content={emailBody}
-                        onUpdate={html => setEmailBody(html)}
+                        onUpdate={(html) => setEmailBody(html)}
                       />
                     </div>
                   </div>
@@ -443,7 +638,7 @@ export default function RegistrationDetails({ slug }: { slug: string }) {
                           Sending
                         </>
                       ) : (
-                        'Send Email'
+                        "Send Email"
                       )}
                     </Button>
                   </DialogFooter>
@@ -458,19 +653,19 @@ export default function RegistrationDetails({ slug }: { slug: string }) {
       <div className="grid gap-4 md:grid-cols-3">
         <Card
           className={cn(
-            'border-l-4',
-            isApproved === 'ACCEPTED'
-              ? 'border-l-emerald-500'
-              : isApproved === 'SUBMITTED'
-                ? 'border-l-amber-500'
-                : 'border-l-rose-500'
+            "border-l-4",
+            isApproved === "ACCEPTED"
+              ? "border-l-emerald-500"
+              : isApproved === "SUBMITTED"
+                ? "border-l-amber-500"
+                : "border-l-rose-500",
           )}
         >
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              {isApproved === 'ACCEPTED' ? (
+              {isApproved === "ACCEPTED" ? (
                 <CheckCircle className="h-4 w-4 text-emerald-500" />
-              ) : isApproved === 'SUBMITTED' ? (
+              ) : isApproved === "SUBMITTED" ? (
                 <Clock className="h-4 w-4 text-amber-500" />
               ) : (
                 <XCircle className="h-4 w-4 text-rose-500" />
@@ -481,21 +676,21 @@ export default function RegistrationDetails({ slug }: { slug: string }) {
           <CardContent>
             <Badge
               variant={
-                isApproved === 'ACCEPTED'
-                  ? 'default'
-                  : isApproved === 'SUBMITTED'
-                    ? 'secondary'
-                    : 'destructive'
+                isApproved === "ACCEPTED"
+                  ? "default"
+                  : isApproved === "SUBMITTED"
+                    ? "secondary"
+                    : "destructive"
               }
               className={cn(
-                isApproved === 'ACCEPTED'
-                  ? 'bg-emerald-600'
-                  : isApproved === 'SUBMITTED'
-                    ? 'bg-amber-500/20 text-amber-600'
-                    : ''
+                isApproved === "ACCEPTED"
+                  ? "bg-emerald-600"
+                  : isApproved === "SUBMITTED"
+                    ? "bg-amber-500/20 text-amber-600"
+                    : "",
               )}
             >
-              {isApproved === 'SUBMITTED' ? 'Pending' : isApproved}
+              {isApproved === "SUBMITTED" ? "Pending" : isApproved}
             </Badge>
           </CardContent>
         </Card>
@@ -508,7 +703,7 @@ export default function RegistrationDetails({ slug }: { slug: string }) {
           </CardHeader>
           <CardContent>
             <span className="text-2xl font-mono font-bold">
-              #{registration.ticket_id?.toString().padStart(5, '0')}
+              #{registration.ticket_id?.toString().padStart(5, "0")}
             </span>
           </CardContent>
         </Card>
@@ -524,10 +719,10 @@ export default function RegistrationDetails({ slug }: { slug: string }) {
               {registration.created_at
                 ? formatInTimeZone(
                     new Date(registration.created_at),
-                    'Asia/Kolkata',
-                    'dd MMM yyyy, hh:mm a'
+                    "Asia/Kolkata",
+                    "dd MMM yyyy, hh:mm a",
                   )
-                : 'N/A'}
+                : "N/A"}
             </span>
           </CardContent>
         </Card>
@@ -555,21 +750,66 @@ export default function RegistrationDetails({ slug }: { slug: string }) {
                     <TableBody>
                       {Object.entries(registration.details || {}).map(
                         ([key, value]) => {
+                          // Skip hidden fields
+                          if (isFieldHidden(key)) return null;
+
                           // Skip team_members as it has its own tab
-                          if (key === 'team_members' || key === 'teamMembers')
-                            return null;
+                          if (isTeamMembersField(key)) return null;
+
+                          // Special handling for file submissions (config-driven)
+                          if (isFileUploadField(key, value)) {
+                            const fileInfo = getFileViewerInfo(
+                              String(value),
+                              key,
+                            );
+                            return (
+                              <TableRow key={key}>
+                                <TableCell className="font-medium capitalize w-1/3">
+                                  {getFieldLabel(key)}
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex flex-wrap gap-2">
+                                    {fileInfo.canView && (
+                                      <Button
+                                        asChild
+                                        variant="default"
+                                        size="sm"
+                                      >
+                                        <a
+                                          href={fileInfo.viewUrl}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="inline-flex items-center gap-2"
+                                        >
+                                          <ExternalLink className="h-4 w-4" />
+                                          View {fileInfo.fileType}
+                                        </a>
+                                      </Button>
+                                    )}
+                                    <Button asChild variant="outline" size="sm">
+                                      <a
+                                        href={fileInfo.downloadUrl}
+                                        download
+                                        className="inline-flex items-center gap-2"
+                                      >
+                                        Download
+                                      </a>
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            );
+                          }
+
                           return (
                             <TableRow key={key}>
                               <TableCell className="font-medium capitalize w-1/3">
-                                {key
-                                  .replace(/([A-Z])/g, ' $1')
-                                  .replace(/_/g, ' ')
-                                  .toLowerCase()}
+                                {getFieldLabel(key)}
                               </TableCell>
                               <TableCell>{formatValue(value)}</TableCell>
                             </TableRow>
                           );
-                        }
+                        },
                       )}
                     </TableBody>
                   </Table>
@@ -607,13 +847,13 @@ export default function RegistrationDetails({ slug }: { slug: string }) {
                           <Badge
                             variant={
                               registration.is_team_entry
-                                ? 'default'
-                                : 'secondary'
+                                ? "default"
+                                : "secondary"
                             }
                           >
                             {registration.is_team_entry
-                              ? 'Team Entry'
-                              : 'Individual'}
+                              ? "Team Entry"
+                              : "Individual"}
                           </Badge>
                         </TableCell>
                       </TableRow>
@@ -625,12 +865,12 @@ export default function RegistrationDetails({ slug }: { slug: string }) {
                           <Badge
                             variant="outline"
                             className={cn(
-                              attendance === 'Present'
-                                ? 'border-emerald-500 text-emerald-600'
-                                : 'border-rose-500 text-rose-600'
+                              attendance === "Present"
+                                ? "border-emerald-500 text-emerald-600"
+                                : "border-rose-500 text-rose-600",
                             )}
                           >
-                            {attendance || 'Not marked'}
+                            {attendance || "Not marked"}
                           </Badge>
                         </TableCell>
                       </TableRow>
@@ -644,8 +884,14 @@ export default function RegistrationDetails({ slug }: { slug: string }) {
                         string,
                         unknown
                       >;
-                      const teamMembers =
-                        details?.team_members || details?.teamMembers;
+                      // Find team members field using config-driven helper
+                      const teamMembersKey = Object.keys(details).find((key) =>
+                        isTeamMembersField(key),
+                      );
+                      const teamMembers = teamMembersKey
+                        ? details[teamMembersKey]
+                        : null;
+
                       if (
                         Array.isArray(teamMembers) &&
                         teamMembers.length > 0
@@ -656,42 +902,90 @@ export default function RegistrationDetails({ slug }: { slug: string }) {
                               (
                                 member: {
                                   name?: string;
+                                  netId?: string;
+                                  contact?: string;
+                                  raNumber?: string;
+                                  dept?: string;
                                   email?: string;
                                   id?: string;
                                 },
-                                idx: number
+                                idx: number,
                               ) => (
-                                <Card key={member.id || idx} className="p-4">
-                                  <div className="flex items-center gap-3">
-                                    <Avatar className="h-10 w-10">
-                                      <AvatarImage
-                                        src={`https://api.dicebear.com/6.x/initials/svg?seed=${member.name || member.email}`}
-                                      />
-                                      <AvatarFallback>
-                                        {(member.name || member.email || 'U')
-                                          .charAt(0)
-                                          .toUpperCase()}
-                                      </AvatarFallback>
-                                    </Avatar>
-                                    <div>
-                                      <p className="font-medium">
-                                        {member.name || 'Team Member'}
-                                      </p>
+                                <Card
+                                  key={member.netId || member.id || idx}
+                                  className="p-4"
+                                >
+                                  <div className="space-y-2">
+                                    <div className="flex items-center gap-3">
+                                      <Avatar className="h-10 w-10">
+                                        <AvatarImage
+                                          src={`https://api.dicebear.com/6.x/initials/svg?seed=${member.name || member.netId || member.email}`}
+                                        />
+                                        <AvatarFallback>
+                                          {(
+                                            member.name ||
+                                            member.netId ||
+                                            member.email ||
+                                            "U"
+                                          )
+                                            .charAt(0)
+                                            .toUpperCase()}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      <div className="flex-1">
+                                        <p className="font-medium">
+                                          {member.name || "Team Member"}
+                                        </p>
+                                        {member.dept && (
+                                          <p className="text-sm text-muted-foreground">
+                                            {member.dept}
+                                          </p>
+                                        )}
+                                      </div>
+                                      <Badge
+                                        variant="outline"
+                                        className="ml-auto"
+                                      >
+                                        Member {idx + 1}
+                                      </Badge>
+                                    </div>
+                                    <div className="pl-[52px] space-y-1 text-sm">
+                                      {member.netId && (
+                                        <p className="text-muted-foreground">
+                                          <span className="font-medium">
+                                            Net ID:
+                                          </span>{" "}
+                                          {member.netId}
+                                        </p>
+                                      )}
                                       {member.email && (
-                                        <p className="text-sm text-muted-foreground">
+                                        <p className="text-muted-foreground">
+                                          <span className="font-medium">
+                                            Email:
+                                          </span>{" "}
                                           {member.email}
                                         </p>
                                       )}
+                                      {member.contact && (
+                                        <p className="text-muted-foreground">
+                                          <span className="font-medium">
+                                            Contact:
+                                          </span>{" "}
+                                          {member.contact}
+                                        </p>
+                                      )}
+                                      {member.raNumber && (
+                                        <p className="text-muted-foreground">
+                                          <span className="font-medium">
+                                            RA Number:
+                                          </span>{" "}
+                                          {member.raNumber}
+                                        </p>
+                                      )}
                                     </div>
-                                    <Badge
-                                      variant="outline"
-                                      className="ml-auto"
-                                    >
-                                      Member {idx + 1}
-                                    </Badge>
                                   </div>
                                 </Card>
-                              )
+                              ),
                             )}
                           </div>
                         );
@@ -732,7 +1026,7 @@ export default function RegistrationDetails({ slug }: { slug: string }) {
                           Updating...
                         </div>
                       ) : (
-                        attendance || 'Select attendance'
+                        attendance || "Select attendance"
                       )}
                     </SelectValue>
                   </SelectTrigger>
@@ -769,10 +1063,10 @@ export default function RegistrationDetails({ slug }: { slug: string }) {
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                           Updating...
                         </div>
-                      ) : isApproved === 'SUBMITTED' ? (
-                        'Pending'
+                      ) : isApproved === "SUBMITTED" ? (
+                        "Pending"
                       ) : (
-                        isApproved || 'Select status'
+                        isApproved || "Select status"
                       )}
                     </SelectValue>
                   </SelectTrigger>

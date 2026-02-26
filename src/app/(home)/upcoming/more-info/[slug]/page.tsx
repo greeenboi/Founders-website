@@ -1,20 +1,20 @@
-import { formatInTimeZone } from 'date-fns-tz';
-import { CalendarDays, Clock, Info, MapPin, Tag, User } from 'lucide-react';
-import type { Metadata, ResolvingMetadata } from 'next';
-import Image from 'next/image';
-import Link from 'next/link';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { formatInTimeZone } from "date-fns-tz";
+import { CalendarDays, Clock, Info, MapPin, Tag, User } from "lucide-react";
+import type { Metadata, ResolvingMetadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { CustomMDX } from '@/mdx-components';
-import { createClient } from '@/utils/supabase/server';
-import type { eventsInsertType } from '../../../../../../schema.zod';
+} from "@/components/ui/card";
+import { CustomMDX } from "@/mdx-components";
+import { createClient } from "@/utils/supabase/server";
+import type { eventsInsertType } from "../../../../../../schema.zod";
 
 // import { enGB } from 'date-fns/locale/';
 
@@ -22,13 +22,13 @@ async function getEventsBySlug({ slug }: { slug: string }) {
   const supabase = await createClient();
 
   const { data: events, error } = await supabase
-    .from('events')
-    .select('*')
-    .eq('slug', slug)
+    .from("events")
+    .select("*")
+    .eq("slug", slug)
     .single();
 
   if (error || !events) {
-    console.error('Error fetching events:', error);
+    console.error("Error fetching events:", error);
     return null;
   }
 
@@ -38,7 +38,7 @@ type Params = Promise<{ slug: string }>;
 
 export async function generateMetadata(
   { params }: { params: Params },
-  parent: ResolvingMetadata
+  parent: ResolvingMetadata,
 ): Promise<Metadata> {
   const event = await getEventsBySlug({ slug: (await params).slug });
 
@@ -46,15 +46,15 @@ export async function generateMetadata(
 
   if (!event) {
     return {
-      title: 'Event Not Found - Upcoming Events | Founders',
-      description: 'Check out our latest events and workshops',
+      title: "Event Not Found - Upcoming Events | Founders",
+      description: "Check out our latest events and workshops",
     };
   }
 
-  const eventDate = new Date(event.start_date).toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
+  const eventDate = new Date(event.start_date).toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
   });
 
   return {
@@ -63,18 +63,18 @@ export async function generateMetadata(
     openGraph: {
       title: event.title,
       description: event.description,
-      type: 'website',
+      type: "website",
       images: [event.banner_image, ...previousImages],
     },
     twitter: {
-      card: 'summary_large_image',
+      card: "summary_large_image",
       title: event.title,
       description: event.description,
       images: [event.banner_image],
     },
     other: {
-      'event:type': event.event_type || 'Online',
-      'event:date': eventDate,
+      "event:type": event.event_type || "Online",
+      "event:date": eventDate,
     },
   };
 }
@@ -134,7 +134,7 @@ export default async function EventRegistrationSection({
                 variant="outline"
                 className="w-full sm:w-auto"
               >
-                <Link href={event.more_info || '#'}>
+                <Link href={event.more_info || "#"}>
                   {event.more_info_text}
                 </Link>
               </Button>
@@ -143,7 +143,7 @@ export default async function EventRegistrationSection({
         </div>
         <div className="mx-auto max-w-screen-xl rounded-lg bg-muted">
           <Image
-            src={event.banner_image || '/placeholder.svg'}
+            src={event.banner_image || "/placeholder.svg"}
             alt={event.title}
             width={1200}
             height={600}
@@ -164,12 +164,12 @@ export default async function EventRegistrationSection({
               <div className="flex items-center gap-4">
                 <Image
                   src="/FC-logo1.png"
-                  alt="Founder's Club"
+                  alt="Founders Club"
                   width={48}
                   height={48}
                   className="rounded-full"
                 />
-                <span>Founder&apos;s Club</span>
+                <span>Founders Club</span>
               </div>
             }
           />
@@ -178,8 +178,8 @@ export default async function EventRegistrationSection({
             title="Starting on"
             content={formatInTimeZone(
               new Date(event.start_date),
-              'Asia/Kolkata',
-              'dd MMMM yyyy, hh:mm a zzz'
+              "Asia/Kolkata",
+              "dd MMMM yyyy, hh:mm a zzz",
             )}
           />
           <EventDetailCard
@@ -187,7 +187,7 @@ export default async function EventRegistrationSection({
             title="Tags"
             content={
               <div className="flex flex-wrap gap-2">
-                {event.tags.map(tag => (
+                {event.tags.map((tag) => (
                   <Badge key={tag} variant="default">
                     {tag}
                   </Badge>
@@ -198,15 +198,15 @@ export default async function EventRegistrationSection({
           <EventDetailCard
             icon={<MapPin className="h-5 w-5" />}
             title="Venue"
-            content={event.venue || 'To be announced'}
+            content={event.venue || "To be announced"}
           />
           <EventDetailCard
             icon={<Clock className="h-5 w-5" />}
             title="End Date"
             content={formatInTimeZone(
               new Date(event.end_date),
-              'Asia/Kolkata',
-              'dd MMMM yyyy, hh:mm a zzz'
+              "Asia/Kolkata",
+              "dd MMMM yyyy, hh:mm a zzz",
             )}
           />
           <EventDetailCard
@@ -226,7 +226,7 @@ export default async function EventRegistrationSection({
             suppressHydrationWarning
           >
             {/* TipTap outputs Markdown, render with MDX */}
-            <CustomMDX source={event.rules || ''} />
+            <CustomMDX source={event.rules || ""} />
           </CardContent>
           <CardFooter>
             <div className="flex flex-col sm:flex-row w-full justify-center space-y-4 sm:space-y-0 sm:space-x-6 mb-6 md:mb-10">
@@ -260,7 +260,7 @@ export default async function EventRegistrationSection({
                   variant="outline"
                   className="w-full sm:w-auto"
                 >
-                  <Link href={event.more_info || '#'}>
+                  <Link href={event.more_info || "#"}>
                     {event.more_info_text}
                   </Link>
                 </Button>

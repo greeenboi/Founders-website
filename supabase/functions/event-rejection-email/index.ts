@@ -62,7 +62,7 @@ Deno.serve(async req => {
     }
     // Send confirmation email to registrant
     const registrantEmailData = {
-      from: "The Founder's Club <no-reply@thefoundersclub.tech>",
+      from: "The Founders Club <no-reply@thefoundersclub.tech>",
       to: [record.registration_email],
       subject: 'Your Event Registration Confirmation',
       html: generateHTML(record),

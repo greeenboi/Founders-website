@@ -7,6 +7,7 @@ import {
   CalendarIcon,
   ChevronRightIcon,
   Eye,
+  Info,
   Link2,
   Loader2,
   Lock,
@@ -857,6 +858,11 @@ const eventFormSchema = z.object({
   rules: z.string().optional(),
   more_info: z.string().url('Must be a valid URL').optional().or(z.literal('')),
   more_info_text: z.string().optional(),
+  external_registration_link: z
+    .string()
+    .url('Must be a valid URL')
+    .optional()
+    .or(z.literal('')),
   event_type: z.enum(['online', 'offline', 'hybrid']),
   is_featured: z.boolean(),
   is_gated: z.boolean(),
@@ -888,6 +894,7 @@ export default function EventFormBuilderPage() {
       rules: '',
       more_info: '',
       more_info_text: '',
+      external_registration_link: '',
       event_type: 'offline',
       is_featured: false,
       is_gated: false,
@@ -954,13 +961,16 @@ export default function EventFormBuilderPage() {
   };
 
   const isGated = form.watch('is_gated');
+  const externalRegistrationLink = form.watch('external_registration_link');
   const watchedValues = form.watch();
 
   const onSubmit = async (data: EventFormValues) => {
-    if (formFields.length === 0) {
+    // Allow submission if either form fields exist OR external registration link is provided
+    if (formFields.length === 0 && !data.external_registration_link) {
       toast({
-        title: 'No form fields',
-        description: 'Please add at least one form field for registrations.',
+        title: 'Registration method required',
+        description:
+          'Please add form fields OR provide an external registration link.',
         variant: 'destructive',
       });
       setActiveTab('form');
@@ -1290,6 +1300,66 @@ export default function EventFormBuilderPage() {
                       </FormItem>
                     )}
                   />
+
+                  <Separator />
+
+                  {/* External Registration Link */}
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="text-sm font-medium flex items-center gap-2">
+                        <Link2 className="h-4 w-4" />
+                        External Registration (Optional)
+                      </h4>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Use an external form (Google Forms, Typeform, etc.)
+                        instead of the internal form builder
+                      </p>
+                    </div>
+                    <FormField
+                      control={form.control}
+                      name="external_registration_link"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>External Registration URL</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                              <Input
+                                {...field}
+                                type="url"
+                                placeholder="https://forms.google.com/..."
+                                className="pl-10"
+                              />
+                            </div>
+                          </FormControl>
+                          <FormDescription>
+                            If provided, the &quot;Register Now&quot; button
+                            will link to this URL instead of using the internal
+                            form
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {externalRegistrationLink && (
+                      <div className="p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900 rounded-lg">
+                        <div className="flex items-start gap-3">
+                          <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+                          <div className="space-y-1">
+                            <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                              External Registration Enabled
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              Users will be redirected to the external link. You
+                              can still add form fields below for reference, but
+                              they won&apos;t be used for registration.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
 
@@ -1452,8 +1522,9 @@ export default function EventFormBuilderPage() {
                     <div>
                       <CardTitle>Registration Form Builder</CardTitle>
                       <CardDescription>
-                        Build a custom registration form. Drag and drop to
-                        reorder fields.
+                        {externalRegistrationLink
+                          ? 'Optional: Add form fields for reference (external registration is active)'
+                          : 'Build a custom registration form. Drag and drop to reorder fields.'}
                       </CardDescription>
                     </div>
                     <Badge variant="outline" className="text-sm">
@@ -1476,9 +1547,14 @@ export default function EventFormBuilderPage() {
                 <CardContent className="pt-6">
                   <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
                     <div className="text-sm text-muted-foreground">
-                      {formFields.length === 0 ? (
+                      {externalRegistrationLink ? (
+                        <span className="text-green-600">
+                          ✓ Ready to create event with external registration
+                        </span>
+                      ) : formFields.length === 0 ? (
                         <span className="text-amber-600">
-                          Add at least one form field to continue
+                          Add at least one form field OR provide an external
+                          registration link
                         </span>
                       ) : (
                         <span className="text-green-600">

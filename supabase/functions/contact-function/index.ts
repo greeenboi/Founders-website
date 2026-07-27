@@ -30,7 +30,7 @@ Deno.serve(async req => {
 
     // Send email using Resend
     const senderEmailData = {
-      from: "The Founder's Club <no-reply@thefoundersclub.tech>",
+      from: "The Founders Club <no-reply@thefoundersclub.tech>",
       to: [record.email],
       subject: 'Your Contact Request has been Submitted',
       html: generateHTML(record),
@@ -44,10 +44,10 @@ Deno.serve(async req => {
     );
 
     const supportEmailData = {
-      from: "The Founder's Club <no-reply@thefoundersclub.tech>",
+      from: "The Founders Club <no-reply@thefoundersclub.tech>",
       to: ['support@thefoundersclub.in'],
       subject: 'New Contact Request has been Submitted',
-      html: `Name: ${record.name}<br/>Email: ${record.email}<br/>Phone: ${record.phone}<br/>Subject: <strong>${record.subject}</strong><br/>Description: ${record.description}<br/><br/>The Founder's Club<br/>Directorate of Entrepeunership and Innovation<br/>SRM Institute of Science and Technology<br/>Kattankulathur<br/>Tamil Nadu - 603203
+      html: `Name: ${record.name}<br/>Email: ${record.email}<br/>Phone: ${record.phone}<br/>Subject: <strong>${record.subject}</strong><br/>Description: ${record.description}<br/><br/>The Founders Club<br/>Directorate of Entrepeunership and Innovation<br/>SRM Institute of Science and Technology<br/>Kattankulathur<br/>Tamil Nadu - 603203
       `,
     };
     console.log(

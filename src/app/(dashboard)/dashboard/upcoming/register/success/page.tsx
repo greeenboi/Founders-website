@@ -34,7 +34,10 @@ import {
 } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { createClient } from '@/utils/supabase/client';
-import type { typeformInsertType, JsonObject } from '../../../../../../../schema.zod';
+import type {
+  JsonObject,
+  typeformInsertType,
+} from '../../../../../../../schema.zod';
 
 export default function CustomizeTicketPage() {
   // Add new state for QR code size
@@ -89,7 +92,11 @@ export default function CustomizeTicketPage() {
       if (!error && data) {
         // Safely parse details as JsonObject
         let existingDetails: JsonObject = {};
-        if (data.details !== null && typeof data.details === 'object' && !Array.isArray(data.details)) {
+        if (
+          data.details !== null &&
+          typeof data.details === 'object' &&
+          !Array.isArray(data.details)
+        ) {
           existingDetails = data.details as JsonObject;
         }
 
@@ -104,12 +111,15 @@ export default function CustomizeTicketPage() {
           event_id: data.event_id ?? undefined,
           is_team_entry: data.is_team_entry ?? false,
           registration_email: data.registration_email ?? '',
-          is_approved: (data.is_approved as typeformInsertType['is_approved']) ?? 'SUBMITTED',
+          is_approved:
+            (data.is_approved as typeformInsertType['is_approved']) ??
+            'SUBMITTED',
           event_title: data.event_title ?? '',
           application_id: data.application_id ?? undefined,
           details: updatedDetails,
           ticket_id: data.ticket_id ?? undefined,
-          attendance: (data.attendance as typeformInsertType['attendance']) ?? undefined,
+          attendance:
+            (data.attendance as typeformInsertType['attendance']) ?? undefined,
         };
 
         setRegistration(registrationData);

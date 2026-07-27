@@ -14,6 +14,7 @@ export const eventsInsertSchema = z.object({
   always_approve: z.boolean().optional().default(false),
   more_info: z.string().nullable().optional(),
   more_info_text: z.string().nullable().optional(),
+  external_registration_link: z.string().nullable().optional(),
   publish_date: z.string(),
   rules: z.string().nullable().optional(),
   slug: z.string().optional(),

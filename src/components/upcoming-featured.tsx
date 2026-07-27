@@ -1,18 +1,18 @@
-import { formatInTimeZone } from 'date-fns-tz';
-import { ArrowUpRight, CalendarX2 } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { formatInTimeZone } from "date-fns-tz";
+import { ArrowUpRight, CalendarX2 } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import type { eventsInsertType } from '../../schema.zod';
-import { GetBlurImage } from './blur-image';
+} from "@/components/ui/card";
+import type { eventsInsertType } from "../../schema.zod";
+import { GetBlurImage } from "./blur-image";
 
 export function FeaturedPost({ event }: { event: eventsInsertType }) {
   // If there's no event OR the event has ended, show a friendly empty state
@@ -47,7 +47,7 @@ export function FeaturedPost({ event }: { event: eventsInsertType }) {
       </div>
     );
   }
-  const tags = event.tags.map(tag => (
+  const tags = event.tags.map((tag) => (
     <Badge key={tag} variant="default">
       {tag}
     </Badge>
@@ -95,14 +95,12 @@ export function FeaturedPost({ event }: { event: eventsInsertType }) {
                 <div className="flex flex-1 items-center gap-3">
                   <Image
                     src="/FC-logo1.png"
-                    alt="Founder's Club"
+                    alt="Founders Club"
                     width={40}
                     height={40}
                     className="rounded-full"
                   />
-                  <span className="text-xs font-medium">
-                    Founder&apos;s Club
-                  </span>
+                  <span className="text-xs font-medium">Founders Club</span>
                 </div>
               </div>
               <div className="flex flex-col">
@@ -111,8 +109,8 @@ export function FeaturedPost({ event }: { event: eventsInsertType }) {
                   <span className="text-sm font-medium">
                     {formatInTimeZone(
                       new Date(event.start_date),
-                      'Asia/Kolkata',
-                      'dd MMMM yyyy'
+                      "Asia/Kolkata",
+                      "dd MMMM yyyy",
                     )}
                   </span>
                 </div>
@@ -129,10 +127,10 @@ export function FeaturedPost({ event }: { event: eventsInsertType }) {
               <div className="flex flex-col gap-px">
                 <span className="text-xs font-medium">Founder&apos;s Club</span>
                 <span className="text-xs text-muted-foreground">
-                  {new Date(event.start_date).toLocaleDateString('en-IN', {
-                    day: '2-digit',
-                    month: 'long',
-                    year: 'numeric',
+                  {new Date(event.start_date).toLocaleDateString("en-IN", {
+                    day: "2-digit",
+                    month: "long",
+                    year: "numeric",
                   })}
                 </span>
               </div>

@@ -5,12 +5,8 @@ import { createClient } from '@/utils/supabase/client';
 
 export const useAdminCheck = () => {
   const router = useRouter();
-  const {
-    isAdmin,
-    adminLoading,
-    adminFetchedForUserId,
-    setAdminState,
-  } = useUserRolesStore();
+  const { isAdmin, adminLoading, adminFetchedForUserId, setAdminState } =
+    useUserRolesStore();
 
   const supabaseRef = useRef(createClient());
   const hasChecked = useRef(false);

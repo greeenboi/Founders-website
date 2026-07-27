@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { LucideLoaderPinwheel, TriangleAlert } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-import { use, useState } from "react";
-import { useForm } from "react-hook-form";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { zodResolver } from '@hookform/resolvers/zod';
+import { LucideLoaderPinwheel, TriangleAlert } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { use, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Form,
   FormControl,
@@ -16,10 +16,10 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { type SignupFormData, signupSchema } from "@/lib/schemas/auth";
-import { signup } from "../actions";
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { type SignupFormData, signupSchema } from '@/lib/schemas/auth';
+import { signup } from '../actions';
 
 export default function SignupPage(props: {
   searchParams: Promise<{ message: string; cause: string; code: string }>;
@@ -29,9 +29,9 @@ export default function SignupPage(props: {
   const form = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
-      email: "",
-      password: "",
-      confirmPassword: "",
+      email: '',
+      password: '',
+      confirmPassword: '',
       terms: false,
     },
   });
@@ -42,7 +42,7 @@ export default function SignupPage(props: {
       await signup(data); // Attempt the login
     } catch (error) {
       // Handle the error (e.g., show a message to the user)
-      console.error("You messed up,Login failed:", error);
+      console.error('You messed up,Login failed:', error);
       // Optionally display an error toast or message to the user here
     } finally {
       setLoading(false); // Reset the button to allow retry
@@ -161,7 +161,10 @@ export default function SignupPage(props: {
                             <div className="space-y-1 leading-none">
                               <FormLabel>
                                 I agree to the&nbsp;
-                                <Link href="/PrivacyPolicy" className="text-primary">
+                                <Link
+                                  href="/PrivacyPolicy"
+                                  className="text-primary"
+                                >
                                   privacy policy
                                 </Link>
                               </FormLabel>
@@ -176,7 +179,7 @@ export default function SignupPage(props: {
                       >
                         {Loading && (
                           <LucideLoaderPinwheel className="animate-spin" />
-                        )}{" "}
+                        )}{' '}
                         Create account
                       </Button>
                     </form>

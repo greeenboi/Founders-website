@@ -129,19 +129,86 @@ export default function TypeformPage() {
       </div>
     );
 
+  if (!event) {
+    return <div>Event not found</div>;
+  }
+
+  // If external registration link exists, redirect to it
+  if (event.external_registration_link) {
+    if (typeof window !== 'undefined') {
+      window.location.href = event.external_registration_link;
+    }
+    return (
+      <main className="h-screen w-full flex items-center justify-center">
+        <div className="z-[100] max-w-[400px] rounded-lg border border-border bg-accent p-4 shadow-lg shadow-black/5">
+          <div className="flex gap-2">
+            <div className="flex grow gap-3">
+              <Info
+                className="mt-0.5 shrink-0 text-blue-500"
+                size={16}
+                strokeWidth={2}
+                aria-hidden="true"
+              />
+              <div className="flex grow flex-col gap-3">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium">
+                    Redirecting to external registration...
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    If you&apos;re not redirected automatically,{' '}
+                    <a
+                      href={event.external_registration_link}
+                      className="text-primary underline"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      click here
+                    </a>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   const parseResult = typeformSchema.safeParse(event?.typeform_config);
   if (!parseResult.success) {
     console.error('Form configuration error:', parseResult.error.flatten());
     return (
-      <div className="p-4 text-red-600">
-        <h2 className="font-bold">Invalid form configuration</h2>
-        <pre>{JSON.stringify(parseResult.error.flatten(), null, 2)}</pre>
-      </div>
+      <main className="h-screen w-full flex items-center justify-center">
+        <div className="z-[100] max-w-[400px] rounded-lg border border-border bg-accent p-4 shadow-lg shadow-black/5">
+          <div className="flex gap-2">
+            <div className="flex grow gap-3">
+              <Info
+                className="mt-0.5 shrink-0 text-amber-500"
+                size={16}
+                strokeWidth={2}
+                aria-hidden="true"
+              />
+              <div className="flex grow flex-col gap-3">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium">
+                    Registration Form Not Available Yet
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    The registration form for this event is being prepared.
+                    Please check back soon!
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={() => Router.push('/upcoming')}>
+                    Back to Events
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
     );
-  }
-
-  if (!event) {
-    return <div>Event not found</div>;
   }
 
   const now = new Date();

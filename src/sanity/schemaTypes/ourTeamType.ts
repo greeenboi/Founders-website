@@ -67,7 +67,6 @@ export const ourTeamType = defineType({
           { title: 'Technical', value: 'technical' },
           { title: 'Creatives', value: 'creatives' },
           { title: 'Outreach', value: 'outreach' },
-          { title: 'Sponsorship', value: 'sponsorship' },
           { title: 'Leadership', value: 'leadership' },
         ],
       },

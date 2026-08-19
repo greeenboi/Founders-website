@@ -148,7 +148,7 @@ const subMenuItemsOne = [
     title: 'Recruitments',
     description: 'Join our team and help us build the future',
     icon: <Sunset className="size-5 shrink-0" />,
-    route: '/recruitments',
+    route: 'https://recruitments.thefoundersclub.tech/',
   },
 ];
 
